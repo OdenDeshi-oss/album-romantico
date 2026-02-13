@@ -32,3 +32,5 @@ assets/music/           → Tus canciones (01.mp3 a 08.mp3)
 4. Abre `index.html` en el navegador
 
 **Contraseña actual:** `09/08/2025`
+
+
