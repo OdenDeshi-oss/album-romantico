@@ -355,3 +355,35 @@ button{font-family:inherit;cursor:pointer}
   font-size:3rem;
   font-family:var(--f-heading);
 }
+.carta-box{
+  width:90%;
+  max-width:720px;
+  height:80vh;              /* 🔥 altura controlada */
+  padding:40px;
+  background:rgba(255,255,255,0.08);
+  backdrop-filter:blur(20px);
+  border-radius:28px;
+  box-shadow:0 40px 80px rgba(0,0,0,0.4);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;          /* 🔥 importante */
+}
+
+.carta-box p{
+  margin-bottom:18px;
+}
+
+.carta-box{
+  overflow-y:auto;          /* 🔥 scroll interno */
+  scroll-behavior:smooth;
+}
+
+/* Scroll elegante */
+.carta-box::-webkit-scrollbar{
+  width:6px;
+}
+
+.carta-box::-webkit-scrollbar-thumb{
+  background:rgba(255,255,255,0.4);
+  border-radius:10px;
+}
