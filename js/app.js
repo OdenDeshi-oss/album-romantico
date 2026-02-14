@@ -11,7 +11,8 @@ let isPaused = false;
    BOOT
    ═══════════════════════════════════ */
 document.addEventListener("DOMContentLoaded", () => {
-  try { initAcceso(); }   catch(e){ console.error("initAcceso",e); }
+  try { initValentinFlow(); } catch(e){ console.error("valentinFlow",e); }
+
   try { buildAlbum(); }   catch(e){ console.error("buildAlbum",e); }
   try { initModal(); }    catch(e){ console.error("initModal",e); }
   try { initParallax(); } catch(e){ console.error("initParallax",e); }
@@ -20,6 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
   try { spawnPetals(18); }   catch(e){}
   try { buildTulips(); }     catch(e){}
 });
+
 
 /* ═══════════════════════════════════
    1. PANTALLA DE ACCESO
@@ -204,7 +206,14 @@ function buildPhotoCard(rec, idx) {
   var pol = document.createElement("div");
   pol.classList.add("polaroid");
   var img = document.createElement("img");
+
+// 🔥 Si tiene múltiples imágenes, usa la primera como portada
+if (rec.imagenes && Array.isArray(rec.imagenes)) {
+  img.src = rec.imagenes[0];
+} else {
   img.src = rec.imagen;
+}
+
   img.alt = rec.titulo || "Foto " + rec.id;
   img.loading = "lazy";
   img.onerror = function() { this.src = phSvg(rec.id); };
@@ -323,8 +332,31 @@ function initModal() {
 }
 
 function openModal(rec) {
-  document.getElementById("m-img").src = rec.imagen;
-  document.getElementById("m-img").onerror = function() { this.src = phSvg(rec.id); };
+  const imgEl = document.getElementById("m-img");
+
+  // LIMPIAR carrusel anterior si existía
+  if (window.modalInterval) {
+    clearInterval(window.modalInterval);
+    window.modalInterval = null;
+  }
+
+  // 🔥 SI ES CARRUSEL
+  if (rec.imagenes && Array.isArray(rec.imagenes) && rec.imagenes.length > 0) {
+    let idx = 0;
+    imgEl.src = rec.imagenes[0];
+
+    window.modalInterval = setInterval(() => {
+      idx = (idx + 1) % rec.imagenes.length;
+      imgEl.src = rec.imagenes[idx];
+    }, 3000);
+
+  } else {
+    // 🔹 Imagen normal
+    imgEl.src = rec.imagen;
+  }
+
+  imgEl.onerror = function() { this.src = phSvg(rec.id); };
+
   document.getElementById("m-titulo").textContent = rec.titulo || "";
   document.getElementById("m-texto").innerHTML = "";
   document.getElementById("vol-range").value = AUDIO_VOL_INICIAL;
@@ -335,12 +367,20 @@ function openModal(rec) {
   document.body.classList.add("no-scroll");
 
   fadeInAudio(rec.musica);
+
   setTimeout(function() {
     startTypewriter(rec.texto, document.getElementById("m-texto"));
   }, 600);
 }
 
+
 function closeModal() {
+
+  if (window.modalInterval) {
+  clearInterval(window.modalInterval);
+  window.modalInterval = null;
+}
+
   document.getElementById("modal").classList.remove("on");
   document.getElementById("modal-overlay").classList.remove("on");
   document.body.classList.remove("no-scroll");
@@ -568,4 +608,93 @@ function buildTulips() {
     }
     layer.appendChild(group);
   });
+}
+/* ═══════════════════════════════════
+   SAN VALENTÍN FLOW
+   ═══════════════════════════════════ */
+
+const FECHA_SAN_VALENTIN = new Date("February 14, 2026 00:00:00").getTime();
+let noClicks = 0;
+
+function initValentinFlow() {
+
+  // 🔥 SIEMPRE mostramos primero la pregunta
+  mostrarPantallaValentin();
+
+}
+
+
+function mostrarPantallaValentin() {
+  const screen = document.getElementById("valentin-screen");
+  screen.style.display = "flex";
+
+  document.getElementById("btn-si").addEventListener("click", mostrarCarta);
+  document.getElementById("btn-no").addEventListener("click", manejarNoClick);
+}
+
+function manejarNoClick() {
+  const btnNo = document.getElementById("btn-no");
+  const btnSi = document.getElementById("btn-si");
+  const msg   = document.getElementById("valentin-msg");
+
+  noClicks++;
+
+  if (noClicks === 1) {
+    msg.textContent = "¿Segura? 🥺";
+  }
+  else if (noClicks === 2) {
+    btnNo.style.transform = "scale(0.8)";
+    btnSi.style.transform = "scale(1.1)";
+    msg.textContent = "Piensa bien eso… 😌";
+  }
+  else if (noClicks === 3) {
+    btnNo.style.position = "relative";
+    btnNo.style.left = (Math.random() * 40 - 20) + "px";
+    msg.textContent = "Ese botón creo que no funciona 🤭";
+  }
+  else {
+    btnNo.style.transform = "scale(0.5)";
+    btnSi.style.transform = "scale(1.2)";
+    msg.textContent = "Ya acepta mejor 😏💕";
+  }
+}
+
+function mostrarCarta() {
+  document.getElementById("valentin-screen").style.display = "none";
+  document.getElementById("carta-screen").style.display = "flex";
+}
+
+function iniciarCountdown() {
+  document.getElementById("carta-screen").style.display = "none";
+  document.getElementById("countdown-screen").style.display = "flex";
+
+  const el = document.getElementById("countdown");
+
+  const interval = setInterval(() => {
+    const ahora = new Date().getTime();
+    const diff = FECHA_SAN_VALENTIN - ahora;
+
+    if (diff <= 0) {
+      clearInterval(interval);
+      mostrarLogin();
+      return;
+    }
+
+    const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const horas = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    const min = Math.floor((diff / (1000 * 60)) % 60);
+    const seg = Math.floor((diff / 1000) % 60);
+
+    el.textContent = `${dias}d ${horas}h ${min}m ${seg}s`;
+  }, 1000);
+}
+
+function mostrarLogin() {
+  document.getElementById("valentin-screen").style.display = "none";
+  document.getElementById("countdown-screen").style.display = "none";
+
+  const login = document.getElementById("pantalla-acceso");
+  login.style.display = "flex";
+
+  initAcceso(); // ahora sí activamos el login original
 }
